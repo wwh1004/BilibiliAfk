@@ -1,31 +1,51 @@
 using System;
+using Bilibili.Api;
 
 namespace Bilibili.Afk {
-	internal static class Logger {
-		public static void LogNewLine() {
-			Console.WriteLine();
+	/// <summary />
+	public sealed class Logger : ILogger {
+		private static readonly Logger _instance = new Logger();
+		private static readonly object _syncRoot = new object();
+
+		public static Logger Instance => _instance;
+
+		private Logger() {
 		}
 
-		public static void LogInfo(string value) {
-			Console.WriteLine(value);
+		/// <summary />
+		public void LogNewLine() {
+			lock (_syncRoot)
+				Console.WriteLine();
 		}
 
-		public static void LogWarning(string value) {
-			ConsoleColor color;
-
-			color = Console.ForegroundColor;
-			Console.ForegroundColor = ConsoleColor.Yellow;
-			Console.WriteLine(value);
-			Console.ForegroundColor = color;
+		/// <summary />
+		public void LogInfo(string value) {
+			lock (_syncRoot)
+				Console.WriteLine(value);
 		}
 
-		public static void LogError(string value) {
-			ConsoleColor color;
+		/// <summary />
+		public void LogWarning(string value) {
+			lock (_syncRoot) {
+				ConsoleColor color;
 
-			color = Console.ForegroundColor;
-			Console.ForegroundColor = ConsoleColor.Red;
-			Console.Error.WriteLine(value);
-			Console.ForegroundColor = color;
+				color = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.Yellow;
+				Console.WriteLine(value);
+				Console.ForegroundColor = color;
+			}
+		}
+
+		/// <summary />
+		public void LogError(string value) {
+			lock (_syncRoot) {
+				ConsoleColor color;
+
+				color = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.Error.WriteLine(value);
+				Console.ForegroundColor = color;
+			}
 		}
 	}
 }

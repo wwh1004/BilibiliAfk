@@ -32,13 +32,13 @@ namespace Bilibili.Api {
 					// Token有效
 					if (expiresIn < 1800) {
 						// Token有效，但是有效时间太短，小于半个小时
-						Logger.LogInfo("Token有效时间不足");
+						user.LogWarning("Token有效时间不足");
 						return await user.RefreshToken();
 					}
 					else {
 						// Token有效时间足够
-						Logger.LogInfo($"用户\"{user}\"使用缓存Token登录成功");
-						Logger.LogInfo($"Token有效时间还剩：{Math.Round(expiresIn / 3600d, 1)} 小时");
+						user.LogInfo("使用缓存Token登录成功");
+						user.LogInfo($"Token有效时间还剩：{Math.Round(expiresIn / 3600d, 1)} 小时");
 						return true;
 					}
 				}
@@ -50,12 +50,12 @@ namespace Bilibili.Api {
 				result = JObject.Parse(json);
 			}
 			catch (Exception ex) {
-				Logger.LogError($"用户\"{user}\"登录失败");
+				user.LogError("登录失败");
 				throw new ApiException(ex);
 			}
 			if ((int)result["code"] == 0 && (int)result["data"]["status"] == 0) {
 				// 登录成功，保存数据直接返回
-				Logger.LogInfo($"用户\"{user}\"登录成功");
+				user.LogInfo("登录成功");
 				UpdateLoginData(user, result);
 				GlobalSettings.SaveUsers();
 				return true;
@@ -65,8 +65,8 @@ namespace Bilibili.Api {
 				return await LoginWithCaptcha(user, key);
 			else {
 				// 其它错误
-				Logger.LogError($"用户\"{user}\"登录失败");
-				Logger.LogError($"错误信息：{Utils.FormatJson(json)}");
+				user.LogError("登录失败");
+				user.LogError($"错误信息：{Utils.FormatJson(json)}");
 				return false;
 			}
 		}
@@ -115,14 +115,14 @@ namespace Bilibili.Api {
 				throw new ApiException(ex);
 			}
 			if ((int)result["code"] == 0 && result["data"]["token_info"]["mid"] != null) {
-				Logger.LogInfo($"Token\"{user}\"刷新成功");
+				user.LogInfo("Token刷新成功");
 				UpdateLoginData(user, result);
 				GlobalSettings.SaveUsers();
 				return true;
 			}
 			else {
-				Logger.LogError($"Token\"{user}\"刷新失败");
-				Logger.LogError($"错误信息：{Utils.FormatJson(json)}");
+				user.LogError("Token刷新失败");
+				user.LogError($"错误信息：{Utils.FormatJson(json)}");
 				return false;
 			}
 		}
@@ -139,20 +139,20 @@ namespace Bilibili.Api {
 				result = JObject.Parse(json);
 			}
 			catch (Exception ex) {
-				Logger.LogError($"用户\"{user}\"登录失败");
+				user.LogError("登录失败");
 				throw new ApiException(ex);
 			}
 			if ((int)result["code"] == 0 && (int)result["data"]["status"] == 0) {
 				// 登录成功，保存数据直接返回
-				Logger.LogInfo($"用户\"{user}\"登录成功");
+				user.LogInfo("登录成功");
 				UpdateLoginData(user, result);
 				GlobalSettings.SaveUsers();
 				return true;
 			}
 			else {
 				// 其它错误
-				Logger.LogError($"用户\"{user}\"登录失败");
-				Logger.LogError($"错误信息：{Utils.FormatJson(json)}");
+				user.LogError("登录失败");
+				user.LogError($"错误信息：{Utils.FormatJson(json)}");
 				return false;
 			}
 		}
