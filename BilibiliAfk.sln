@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BilibiliAfk", "BilibiliAfk\BilibiliAfk.csproj", "{441645F3-6C2D-490A-A5A9-7D0ED87D3611}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bilibili.Afk", "Bilibili.Afk\Bilibili.Afk.csproj", "{441645F3-6C2D-490A-A5A9-7D0ED87D3611}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bilibili.Api", "Bilibili.API\Bilibili.Api.csproj", "{15158D78-395E-4415-AA24-9D9DD2BE7E7F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{441645F3-6C2D-490A-A5A9-7D0ED87D3611}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{441645F3-6C2D-490A-A5A9-7D0ED87D3611}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{441645F3-6C2D-490A-A5A9-7D0ED87D3611}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15158D78-395E-4415-AA24-9D9DD2BE7E7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15158D78-395E-4415-AA24-9D9DD2BE7E7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15158D78-395E-4415-AA24-9D9DD2BE7E7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15158D78-395E-4415-AA24-9D9DD2BE7E7F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
