@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Bilibili.Api;
-using Bilibili.Api.Settings;
+using Bilibili.Settings;
 using Newtonsoft.Json;
 
 namespace Bilibili {
@@ -10,7 +9,7 @@ namespace Bilibili {
 	/// 表示一个Bilibili用户
 	/// </summary>
 	[JsonObject(MemberSerialization.OptIn)]
-	public sealed class User {
+	public sealed class User : IDisposable {
 		[JsonProperty("Account")]
 		private readonly string _account;
 		[JsonProperty("Password")]
@@ -20,6 +19,7 @@ namespace Bilibili {
 		private readonly Dictionary<string, string> _appHeaders;
 		[JsonProperty("LoginData", NullValueHandling = NullValueHandling.Ignore)]
 		private readonly Dictionary<string, string> _loginData;
+		private bool _isDisposed;
 
 		/// <summary>
 		/// 账号（手机号/邮箱）
@@ -107,6 +107,14 @@ namespace Bilibili {
 		/// <summary />
 		public override string ToString() {
 			return _account;
+		}
+
+		/// <summary />
+		public void Dispose() {
+			if (_isDisposed)
+				return;
+			_client.Dispose();
+			_isDisposed = true;
 		}
 	}
 }

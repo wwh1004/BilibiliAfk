@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Bilibili.Api.Settings;
+using Bilibili.Settings;
 using Newtonsoft.Json.Linq;
 
 namespace Bilibili.Api {

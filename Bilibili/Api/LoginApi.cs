@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Bilibili.Api.Settings;
+using Bilibili.Settings;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

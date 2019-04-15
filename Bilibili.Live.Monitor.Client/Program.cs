@@ -3,7 +3,7 @@ using Bilibili.Api;
 using Bilibili.Settings;
 using System.Reflection;
 
-namespace Bilibili.Afk {
+namespace Bilibili.Live.Monitor {
 	internal static class Program {
 		private static void Main(string[] args) {
 			UserList users;
@@ -25,7 +25,14 @@ namespace Bilibili.Afk {
 			}
 			users = GlobalSettings.Users;
 			User user = users[0];
-			var result = user.Login().GetAwaiter().GetResult();
+
+			DanmuMonitor danmuMonitor = new DanmuMonitor(LiveApi.GetRoomIdsDynamic(0, 1000).GetAwaiter().GetResult());
+			danmuMonitor.Start();
+			//TcpClient[] clients = DanmuApi.CreateClients(LiveApi.GetRoomIdsDynamic(0, 5).GetAwaiter().GetResult());
+			//client.Connect()
+			//DanmuApi.EnterRoom(client, 10209381);
+
+			//var result = LiveApi.GetRoomIdsDynamic(0, 1).GetAwaiter().GetResult();
 			Console.ReadKey(true);
 		}
 

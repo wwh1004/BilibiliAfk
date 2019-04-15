@@ -1,23 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Title>Bilibili.Afk</Title>
-    <Product>Bilibili.Afk</Product>
+    <Title>Bilibili</Title>
+    <Product>Bilibili</Product>
     <Copyright>Copyright © 2019 Wwh</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.1;net472</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyOriginatorKeyFile>../BilibiliAfk.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Bilibili\Bilibili.csproj" />
+    <None Update="Settings\BilibiliSettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

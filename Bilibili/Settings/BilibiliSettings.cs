@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Bilibili.Api.Settings {
+namespace Bilibili.Settings {
 	/// <summary />
 	[JsonObject(MemberSerialization.OptIn)]
 	public sealed class BilibiliSettings {
@@ -41,7 +41,7 @@ namespace Bilibili.Api.Settings {
 			BilibiliSettings settings;
 
 			settings = JsonConvert.DeserializeObject<BilibiliSettings>(json);
-			settings._appParameters = settings._general.Join();
+			settings._appParameters = settings._general.FormToString();
 			return settings;
 		}
 

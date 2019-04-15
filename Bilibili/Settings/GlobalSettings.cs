@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Bilibili.Api.Settings {
+namespace Bilibili.Settings {
 	/// <summary>
 	/// 全局设置
 	/// </summary>
@@ -67,6 +67,9 @@ namespace Bilibili.Api.Settings {
 			}
 
 			public void LogError(string value) {
+			}
+
+			public void LogException(Exception value) {
 			}
 		}
 	}

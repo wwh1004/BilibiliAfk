@@ -3,9 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bilibili.Afk", "Bilibili.Afk\Bilibili.Afk.csproj", "{441645F3-6C2D-490A-A5A9-7D0ED87D3611}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bilibili", "Bilibili\Bilibili.csproj", "{15158D78-395E-4415-AA24-9D9DD2BE7E7F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bilibili.Api", "Bilibili.API\Bilibili.Api.csproj", "{15158D78-395E-4415-AA24-9D9DD2BE7E7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bilibili.Live.Monitor", "Bilibili.Live.Monitor\Bilibili.Live.Monitor.csproj", "{57675D73-0F3F-4B86-8C9E-509612D5DB59}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bilibili.Afk", "Bilibili.Afk\Bilibili.Afk.csproj", "{4FC8718A-A473-40DA-9D23-922351F72033}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bilibili.Live.Monitor.Client", "Bilibili.Live.Monitor.Client\Bilibili.Live.Monitor.Client.csproj", "{8F1A4224-241C-480D-A761-38DFA6E9643A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +17,22 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{441645F3-6C2D-490A-A5A9-7D0ED87D3611}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{441645F3-6C2D-490A-A5A9-7D0ED87D3611}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{441645F3-6C2D-490A-A5A9-7D0ED87D3611}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{441645F3-6C2D-490A-A5A9-7D0ED87D3611}.Release|Any CPU.Build.0 = Release|Any CPU
 		{15158D78-395E-4415-AA24-9D9DD2BE7E7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{15158D78-395E-4415-AA24-9D9DD2BE7E7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15158D78-395E-4415-AA24-9D9DD2BE7E7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15158D78-395E-4415-AA24-9D9DD2BE7E7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57675D73-0F3F-4B86-8C9E-509612D5DB59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57675D73-0F3F-4B86-8C9E-509612D5DB59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57675D73-0F3F-4B86-8C9E-509612D5DB59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57675D73-0F3F-4B86-8C9E-509612D5DB59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FC8718A-A473-40DA-9D23-922351F72033}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FC8718A-A473-40DA-9D23-922351F72033}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FC8718A-A473-40DA-9D23-922351F72033}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FC8718A-A473-40DA-9D23-922351F72033}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F1A4224-241C-480D-A761-38DFA6E9643A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F1A4224-241C-480D-A761-38DFA6E9643A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F1A4224-241C-480D-A761-38DFA6E9643A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F1A4224-241C-480D-A761-38DFA6E9643A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

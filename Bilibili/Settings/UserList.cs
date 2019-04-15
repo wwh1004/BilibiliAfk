@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Bilibili.Api.Settings {
+namespace Bilibili.Settings {
 	/// <summary>
 	/// 用户列表
 	/// </summary>

@@ -1,7 +1,7 @@
 using System;
-using Bilibili.Api.Settings;
+using Bilibili.Settings;
 
-namespace Bilibili.Api {
+namespace Bilibili {
 	/// <summary />
 	public static class UserExtensions {
 		/// <summary />

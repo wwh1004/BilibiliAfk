@@ -1,10 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using Bilibili.Api.Settings;
+using Bilibili.Settings;
 
 namespace Bilibili.Api {
 	internal static class ApiUtils {
@@ -17,13 +16,9 @@ namespace Bilibili.Api {
 			return (ulong)timeSpan.TotalSeconds;
 		}
 
-		public static string Join(this IEnumerable<KeyValuePair<string, string>> values) {
-			return string.Join("&", values.Select(t => t.Key + "=" + Uri.EscapeDataString(t.Value)));
-		}
-
 		public static void SortAndSign(this FormUrlEncodedCollection parameters) {
 			parameters.Sort((x, y) => x.Key[0] - y.Key[0]);
-			parameters.Add("sign", ComputeSign(parameters.Join()));
+			parameters.Add("sign", ComputeSign(parameters.FormToString()));
 		}
 
 		private static string ComputeSign(string text) {

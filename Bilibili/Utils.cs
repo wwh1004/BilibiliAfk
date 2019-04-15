@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Bilibili.Api {
+namespace Bilibili {
 	internal static class Utils {
 		public static void UpdateRange(this Dictionary<string, string> target, Dictionary<string, string> source) {
 			foreach (KeyValuePair<string, string> item in source)
@@ -55,7 +56,7 @@ namespace Bilibili.Api {
 			if (parameters != null && method == HttpMethod.Get) {
 				string query;
 
-				query = parameters.Join();
+				query = parameters.FormToString();
 				if (!string.IsNullOrEmpty(query))
 					if (string.IsNullOrEmpty(uriBuilder.Query))
 						uriBuilder.Query = query;
@@ -74,6 +75,10 @@ namespace Bilibili.Api {
 			return client.SendAsync(request);
 		}
 
+		public static string FormToString(this IEnumerable<KeyValuePair<string, string>> values) {
+			return string.Join("&", values.Select(t => t.Key + "=" + Uri.EscapeDataString(t.Value)));
+		}
+
 		public static string FormatJson(string json) {
 			using (StringWriter writer = new StringWriter())
 			using (JsonTextWriter jsonWriter = new JsonTextWriter(writer) { Formatting = Formatting.Indented })
@@ -82,28 +87,6 @@ namespace Bilibili.Api {
 				jsonWriter.WriteToken(jsonReader);
 				return writer.ToString();
 			}
-		}
-
-		public static string ToFullString(this Exception exception) {
-			if (exception == null)
-				throw new ArgumentNullException(nameof(exception));
-
-			StringBuilder sb;
-
-			sb = new StringBuilder();
-			DumpException(exception, sb);
-			return sb.ToString();
-		}
-
-		private static void DumpException(Exception exception, StringBuilder sb) {
-			sb.AppendLine("Type: " + Environment.NewLine + exception.GetType().FullName);
-			sb.AppendLine("Message: " + Environment.NewLine + exception.Message);
-			sb.AppendLine("Source: " + Environment.NewLine + exception.Source);
-			sb.AppendLine("StackTrace: " + Environment.NewLine + exception.StackTrace);
-			sb.AppendLine("TargetSite: " + Environment.NewLine + exception.TargetSite.ToString());
-			sb.AppendLine("----------------------------------------");
-			if (exception.InnerException != null)
-				DumpException(exception.InnerException, sb);
 		}
 	}
 }

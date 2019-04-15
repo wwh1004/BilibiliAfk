@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Title>Bilibili.Afk</Title>
-    <Product>Bilibili.Afk</Product>
+    <Title>Bilibili.Live.Monitor.Client</Title>
+    <Product>Bilibili.Live.Monitor.Client</Product>
     <Copyright>Copyright © 2019 Wwh</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
@@ -18,6 +18,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Bilibili.Live.Monitor\Bilibili.Live.Monitor.csproj" />
     <ProjectReference Include="..\Bilibili\Bilibili.csproj" />
   </ItemGroup>
 </Project>

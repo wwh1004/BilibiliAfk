@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace Bilibili.Afk {
+namespace Bilibili.Live.Monitor {
 	/// <summary />
 	public sealed class Logger : ILogger {
 		private static readonly Logger _instance = new Logger();

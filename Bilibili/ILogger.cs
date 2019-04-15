@@ -1,4 +1,6 @@
-namespace Bilibili.Api {
+using System;
+
+namespace Bilibili {
 	/// <summary>
 	/// 表示一个Logger
 	/// </summary>
@@ -25,5 +27,11 @@ namespace Bilibili.Api {
 		/// </summary>
 		/// <param name="value"></param>
 		void LogError(string value);
+
+		/// <summary>
+		/// 记录异常
+		/// </summary>
+		/// <param name="value"></param>
+		void LogException(Exception value);
 	}
 }
