@@ -16,7 +16,8 @@ namespace Bilibili.Live.Monitor {
 			try {
 				GlobalSettings.LoadAll();
 			}
-			catch {
+			catch (Exception ex) {
+				GlobalSettings.Logger.LogException(ex);
 				GlobalSettings.Logger.LogError("缺失或无效配置文件");
 				Console.ReadKey(true);
 				return;

@@ -22,7 +22,7 @@ namespace Bilibili.Afk {
 			}
 			catch (Exception ex) {
 				GlobalSettings.Logger.LogException(ex);
-				GlobalSettings.Logger.LogError("缺失或无效配置文件，请检查是否添加\"Users.json\"");
+				GlobalSettings.Logger.LogError($"缺失或无效配置文件，请检查是否添加\"{Users.GetDefaultFileName()}\"");
 				Console.ReadKey(true);
 				return;
 			}
