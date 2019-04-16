@@ -11,7 +11,7 @@ namespace Bilibili.Live.Monitor {
 	/// <summary>
 	/// 弹幕监视器
 	/// </summary>
-	public sealed class DanmuMonitor:IDisposable {
+	public sealed class DanmuMonitor : IDisposable {
 		private readonly uint[] _roomIds;
 		private readonly TcpClient[] _clients;
 		private readonly bool[] _isConnecteds;
@@ -63,17 +63,6 @@ namespace Bilibili.Live.Monitor {
 
 			_connectionKeeper.Start();
 			_danmuHandler.Start();
-		}
-
-		private List<TcpClient> GetReadableClients() {
-			List<TcpClient> checkRead;
-
-			checkRead = new List<TcpClient>(_clients.Length);
-			for (int i = 0; i < _clients.Length; i++)
-				if (!_isConnecteds[i])
-					checkRead.Add(_clients[i]);
-			Socket.Select(checkRead, null, null, -1);
-			return checkRead;
 		}
 
 		private void KeepConnection() {

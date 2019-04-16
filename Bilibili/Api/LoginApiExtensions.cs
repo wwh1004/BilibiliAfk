@@ -1,14 +1,39 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Bilibili.Settings;
 using Newtonsoft.Json.Linq;
 
 namespace Bilibili.Api {
+	/// <summary />
+	public class LoginDataUpdatedEventArgs : EventArgs {
+		private readonly User _user;
+
+		/// <summary>
+		/// 登录数据出现更新的用户
+		/// </summary>
+		public User User => _user;
+
+		/// <summary>
+		/// 构造器
+		/// </summary>
+		/// <param name="user"></param>
+		public LoginDataUpdatedEventArgs(User user) {
+			if (user == null)
+				throw new ArgumentNullException(nameof(user));
+
+			_user = user;
+		}
+	}
+
 	/// <summary>
 	/// 登录API扩展类，提供快速操作
 	/// </summary>
 	public static class LoginApiExtensions {
+		/// <summary>
+		/// 在用户登录数据更新时发生
+		/// </summary>
+		public static event EventHandler<LoginDataUpdatedEventArgs> LoginDataUpdated;
+
 		/// <summary>
 		/// 登录
 		/// </summary>
@@ -57,7 +82,7 @@ namespace Bilibili.Api {
 				// 登录成功，保存数据直接返回
 				user.LogInfo("登录成功");
 				UpdateLoginData(user, result);
-				GlobalSettings.SaveUsers();
+				OnLoginDataUpdated(new LoginDataUpdatedEventArgs(user));
 				return true;
 			}
 			else if ((int)result["code"] == -105)
@@ -117,7 +142,7 @@ namespace Bilibili.Api {
 			if ((int)result["code"] == 0 && result["data"]["token_info"]["mid"] != null) {
 				user.LogInfo("Token刷新成功");
 				UpdateLoginData(user, result);
-				GlobalSettings.SaveUsers();
+				OnLoginDataUpdated(new LoginDataUpdatedEventArgs(user));
 				return true;
 			}
 			else {
@@ -146,7 +171,7 @@ namespace Bilibili.Api {
 				// 登录成功，保存数据直接返回
 				user.LogInfo("登录成功");
 				UpdateLoginData(user, result);
-				GlobalSettings.SaveUsers();
+				OnLoginDataUpdated(new LoginDataUpdatedEventArgs(user));
 				return true;
 			}
 			else {
@@ -169,6 +194,10 @@ namespace Bilibili.Api {
 			user.LoginData["csrf"] = (string)cookies[0]["value"];
 			user.LoginData["refresh_token"] = (string)tokenInfo["refresh_token"];
 			user.LoginData["uid"] = (string)cookies[1]["value"];
+		}
+
+		private static void OnLoginDataUpdated(LoginDataUpdatedEventArgs e) {
+			LoginDataUpdated?.Invoke(null, e);
 		}
 	}
 }

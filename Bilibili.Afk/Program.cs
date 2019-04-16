@@ -1,12 +1,13 @@
 using System;
+using System.IO;
+using System.Reflection;
 using Bilibili.Api;
 using Bilibili.Settings;
-using System.Reflection;
 
 namespace Bilibili.Afk {
 	internal static class Program {
 		private static void Main(string[] args) {
-			UserList users;
+			Users users;
 
 			Console.Title = GetTitle();
 			GlobalSettings.Logger = Logger.Instance;
@@ -17,13 +18,14 @@ namespace Bilibili.Afk {
 			}
 			try {
 				GlobalSettings.LoadAll();
+				users = Users.FromJson(File.ReadAllText(Users.GetDefaultFileName()));
 			}
-			catch {
+			catch (Exception ex) {
+				GlobalSettings.Logger.LogException(ex);
 				GlobalSettings.Logger.LogError("缺失或无效配置文件，请检查是否添加\"Users.json\"");
 				Console.ReadKey(true);
 				return;
 			}
-			users = GlobalSettings.Users;
 			User user = users[0];
 			var result = user.Login().GetAwaiter().GetResult();
 			Console.ReadKey(true);

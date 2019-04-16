@@ -1,13 +1,11 @@
 using System;
+using System.Reflection;
 using Bilibili.Api;
 using Bilibili.Settings;
-using System.Reflection;
 
 namespace Bilibili.Live.Monitor {
 	internal static class Program {
 		private static void Main(string[] args) {
-			UserList users;
-
 			Console.Title = GetTitle();
 			GlobalSettings.Logger = Logger.Instance;
 			if (!BitConverter.IsLittleEndian) {
@@ -19,13 +17,10 @@ namespace Bilibili.Live.Monitor {
 				GlobalSettings.LoadAll();
 			}
 			catch {
-				GlobalSettings.Logger.LogError("缺失或无效配置文件，请检查是否添加\"Users.json\"");
+				GlobalSettings.Logger.LogError("缺失或无效配置文件");
 				Console.ReadKey(true);
 				return;
 			}
-			users = GlobalSettings.Users;
-			User user = users[0];
-
 			DanmuMonitor danmuMonitor = new DanmuMonitor(LiveApi.GetRoomIdsDynamic(0, 1000).GetAwaiter().GetResult());
 			danmuMonitor.Start();
 			//TcpClient[] clients = DanmuApi.CreateClients(LiveApi.GetRoomIdsDynamic(0, 5).GetAwaiter().GetResult());
