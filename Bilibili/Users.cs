@@ -30,7 +30,7 @@ namespace Bilibili {
 		}
 
 		/// <summary>
-		/// 获取用户列表的默认文件名，由当前正在执行的程序集决定
+		/// 获取用户列表的默认文件名，由调用方所属程序集决定
 		/// </summary>
 		/// <returns></returns>
 		public static string GetDefaultFileName() {
