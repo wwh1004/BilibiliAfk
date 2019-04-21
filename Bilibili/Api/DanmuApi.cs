@@ -3,12 +3,15 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bilibili.Api {
 	/// <summary>
 	/// 弹幕API
 	/// </summary>
 	public static class DanmuApi {
+		private const int HEART_BEAT_INTERVAL_SECONDS = 30;
 		private const string DANMU_HOST_NAME = "broadcastlv.chat.bilibili.com";
 		private const int DANMU_HOST_PORT = 2243;
 
@@ -16,16 +19,21 @@ namespace Bilibili.Api {
 		private static readonly byte[] _heartBeatPacket = Pack(DanmuType.HeartBeat, Array.Empty<byte>());
 
 		/// <summary>
+		/// 心跳间隔
+		/// </summary>
+		public static TimeSpan HeartBeatInterval => new TimeSpan(0, 0, HEART_BEAT_INTERVAL_SECONDS);
+
+		/// <summary>
 		/// 连接弹幕服务器
 		/// </summary>
 		/// <param name="client"></param>
 		/// <returns></returns>
-		public static void Connect(TcpClient client) {
+		public static async Task ConnectAsync(TcpClient client) {
 			if (client == null)
 				throw new ArgumentNullException(nameof(client));
 
 			try {
-				client.Connect(DANMU_HOST_NAME, DANMU_HOST_PORT);
+				await client.ConnectAsync(DANMU_HOST_NAME, DANMU_HOST_PORT);
 			}
 			catch (Exception ex) {
 				throw new ApiException(ex);
@@ -38,12 +46,12 @@ namespace Bilibili.Api {
 		/// <param name="client"></param>
 		/// <param name="roomId">房间ID</param>
 		/// <returns></returns>
-		public static void EnterRoom(TcpClient client, uint roomId) {
+		public static async Task EnterRoomAsync(TcpClient client, uint roomId) {
 			if (client == null)
 				throw new ArgumentNullException(nameof(client));
 
 			try {
-				client.Client.Send(Pack(DanmuType.EnterRoom, string.Format("{{\"roomid\":{0},\"uid\":{1}}}", roomId, _random.Next())));
+				await client.SendAsync(Pack(DanmuType.EnterRoom, string.Format("{{\"roomid\":{0},\"uid\":{1}}}", roomId, _random.Next())));
 			}
 			catch (Exception ex) {
 				throw new ApiException(ex);
@@ -68,26 +76,56 @@ namespace Bilibili.Api {
 		}
 
 		/// <summary>
-		/// 解析弹幕
+		/// 发送心跳
 		/// </summary>
-		/// <param name="socket"></param>
+		/// <param name="client"></param>
 		/// <returns></returns>
-		public static unsafe Danmu ResolveDanmu(Socket socket) {
-			if (socket == null)
-				throw new ArgumentNullException(nameof(socket));
+		public static async Task SendHeartBeatAsync(TcpClient client) {
+			if (client == null)
+				throw new ArgumentNullException(nameof(client));
+
+			try {
+				await client.SendAsync(_heartBeatPacket);
+			}
+			catch (Exception ex) {
+				throw new ApiException(ex);
+			}
+		}
+
+		/// <summary>
+		/// 读取弹幕
+		/// </summary>
+		/// <param name="client"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		public static async Task<Danmu> ReadDanmuAsync(TcpClient client, CancellationToken cancellationToken) {
+			if (client == null)
+				throw new ArgumentNullException(nameof(client));
 
 			byte[] buffer;
+			int length;
 			DanmuType action;
 
 			buffer = new byte[16];
-			socket.Receive(buffer);
-			// receive header
-			fixed (byte* p = buffer) {
+			await client.ReceiveAsync(buffer).WithCancellation(cancellationToken);
+			// read header
+			if (cancellationToken.IsCancellationRequested)
+				return Danmu.Empty;
+			ResolveDanmuHeader(buffer, out length, out action);
+			buffer = new byte[length];
+			if (buffer.Length != 0)
+				await client.ReceiveAsync(buffer);
+			// read payload
+			return ResolveDanmuPayload(action, buffer);
+		}
+
+		private static unsafe void ResolveDanmuHeader(byte[] header, out int length, out DanmuType action) {
+			fixed (byte* p = header) {
 				int value;
 
 				value = IPAddress.NetworkToHostOrder(*(int*)p);
 				// packet length
-				buffer = new byte[value - 16];
+				length = value - 16;
 #pragma warning disable IDE0059
 				value = IPAddress.NetworkToHostOrder(*(short*)(p + 4));
 				// header length
@@ -100,23 +138,9 @@ namespace Bilibili.Api {
 				// magic
 #pragma warning restore IDE0059
 			}
-			if (buffer.Length != 0)
-				// 握手确认这样的消息没有payload
-				socket.Receive(buffer);
-			// receive payload
-			return ResolveDanmu(action, buffer);
 		}
 
-		/// <summary>
-		/// 解析弹幕
-		/// </summary>
-		/// <param name="action"></param>
-		/// <param name="payload">原始的二进制格式弹幕</param>
-		/// <returns></returns>
-		public static Danmu ResolveDanmu(DanmuType action, byte[] payload) {
-			if (payload == null)
-				throw new ArgumentNullException(nameof(payload));
-
+		private static Danmu ResolveDanmuPayload(DanmuType action, byte[] payload) {
 			switch (action) {
 			case DanmuType.Command:
 			case DanmuType.Handshaking:

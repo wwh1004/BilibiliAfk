@@ -28,7 +28,7 @@ namespace Bilibili.Api {
 		/// </summary>
 		/// <param name="user">用户</param>
 		/// <returns></returns>
-		public static async Task<byte[]> GetCaptcha(User user) {
+		public static async Task<byte[]> GetCaptchaAsync(User user) {
 			if (user == null)
 				throw new ArgumentNullException(nameof(user));
 
@@ -41,7 +41,7 @@ namespace Bilibili.Api {
 		/// </summary>
 		/// <param name="user">用户</param>
 		/// <returns></returns>
-		public static async Task<bool> Logout(User user) {
+		public static async Task<bool> LogoutAsync(User user) {
 			if (user == null)
 				throw new ArgumentNullException(nameof(user));
 
@@ -54,7 +54,7 @@ namespace Bilibili.Api {
 		/// </summary>
 		/// <param name="user">用户</param>
 		/// <returns></returns>
-		public static async Task<string> GetKey(User user) {
+		public static async Task<string> GetKeyAsync(User user) {
 			if (user == null)
 				throw new ArgumentNullException(nameof(user));
 
@@ -73,7 +73,7 @@ namespace Bilibili.Api {
 		/// </summary>
 		/// <param name="user">用户</param>
 		/// <returns></returns>
-		public static async Task<string> GetInfo(User user) {
+		public static async Task<string> GetInfoAsync(User user) {
 			if (user == null)
 				throw new ArgumentNullException(nameof(user));
 
@@ -102,7 +102,7 @@ namespace Bilibili.Api {
 		/// <param name="jsonKey">Key</param>
 		/// <param name="captcha">验证码</param>
 		/// <returns></returns>
-		public static async Task<string> Login(User user, string jsonKey, string captcha) {
+		public static async Task<string> LoginAsync(User user, string jsonKey, string captcha) {
 			if (user == null)
 				throw new ArgumentNullException(nameof(user));
 			if (string.IsNullOrEmpty(jsonKey))
@@ -133,7 +133,7 @@ namespace Bilibili.Api {
 		/// </summary>
 		/// <param name="user">用户</param>
 		/// <returns></returns>
-		public static async Task<string> RefreshToken(User user) {
+		public static async Task<string> RefreshTokenAsync(User user) {
 			if (user == null)
 				throw new ArgumentNullException(nameof(user));
 
@@ -161,7 +161,7 @@ namespace Bilibili.Api {
 		/// </summary>
 		/// <param name="captcha"></param>
 		/// <returns></returns>
-		public static async Task<string> SolveCaptcha(byte[] captcha) {
+		public static async Task<string> SolveCaptchaAsync(byte[] captcha) {
 			string json;
 
 			json = JsonConvert.SerializeObject(new {

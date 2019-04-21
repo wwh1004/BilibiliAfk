@@ -70,8 +70,8 @@ namespace Bilibili.Api {
 			}
 			// 不存在登录数据，这是第一次登录
 			try {
-				key = await LoginApi.GetKey(user);
-				json = await LoginApi.Login(user, key, null);
+				key = await LoginApi.GetKeyAsync(user);
+				json = await LoginApi.LoginAsync(user, key, null);
 				result = JObject.Parse(json);
 			}
 			catch (Exception ex) {
@@ -108,7 +108,7 @@ namespace Bilibili.Api {
 			JObject result;
 
 			try {
-				string json = await LoginApi.GetInfo(user);
+				string json = await LoginApi.GetInfoAsync(user);
 				result = JObject.Parse(json);
 			}
 			catch (Exception ex) {
@@ -133,7 +133,7 @@ namespace Bilibili.Api {
 			JObject result;
 
 			try {
-				json = await LoginApi.RefreshToken(user);
+				json = await LoginApi.RefreshTokenAsync(user);
 				result = JObject.Parse(json);
 			}
 			catch (Exception ex) {
@@ -159,8 +159,8 @@ namespace Bilibili.Api {
 			try {
 				string captcha;
 
-				captcha = await LoginApi.SolveCaptcha(await LoginApi.GetCaptcha(user));
-				json = await LoginApi.Login(user, key, captcha);
+				captcha = await LoginApi.SolveCaptchaAsync(await LoginApi.GetCaptchaAsync(user));
+				json = await LoginApi.LoginAsync(user, key, captcha);
 				result = JObject.Parse(json);
 			}
 			catch (Exception ex) {
