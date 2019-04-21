@@ -7,6 +7,7 @@ using Bilibili.Settings;
 namespace Bilibili.Afk {
 	internal static class Program {
 		private static void Main(string[] args) {
+			string usersFilePath;
 			Users users;
 
 			Console.Title = GetTitle();
@@ -16,16 +17,18 @@ namespace Bilibili.Afk {
 				GlobalSettings.Logger.LogWarning("如果出现错误，请创建issue");
 				//throw new PlatformNotSupportedException();
 			}
+			usersFilePath = Path.Combine(Environment.CurrentDirectory, "Settings", GetAssemblyAttribute<AssemblyProductAttribute>().Product + ".Users.json");
 			try {
 				GlobalSettings.LoadAll();
-				users = Users.FromJson(File.ReadAllText(Users.GetDefaultFileName()));
+				users = Users.FromJson(File.ReadAllText(usersFilePath));
 			}
 			catch (Exception ex) {
 				GlobalSettings.Logger.LogException(ex);
-				GlobalSettings.Logger.LogError($"缺失或无效配置文件，请检查是否添加\"{Users.GetDefaultFileName()}\"");
+				GlobalSettings.Logger.LogError($"缺失或无效配置文件，请检查是否添加\"{usersFilePath}\"");
 				Console.ReadKey(true);
 				return;
 			}
+			LoginApiExtensions.LoginDataUpdated += (sender, e) => File.WriteAllText(usersFilePath, users.ToJson());
 			User user = users[0];
 			var result = user.Login().GetAwaiter().GetResult();
 			Console.ReadKey(true);

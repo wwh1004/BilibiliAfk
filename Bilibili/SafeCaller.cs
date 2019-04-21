@@ -170,5 +170,22 @@ namespace Bilibili {
 				}
 			return (result, isSucceed);
 		}
+
+		/// <summary>
+		/// 循环调用API
+		/// </summary>
+		/// <param name="action"></param>
+		/// <param name="delay">延时多少毫秒开始下一次调用</param>
+		/// <returns></returns>
+		public static void Loop(Action action, int delay = 0) {
+			while (true)
+				try {
+					action();
+					Thread.Sleep(delay);
+				}
+				catch (Exception ex) {
+					GlobalSettings.Logger.LogException(ex);
+				}
+		}
 	}
 }

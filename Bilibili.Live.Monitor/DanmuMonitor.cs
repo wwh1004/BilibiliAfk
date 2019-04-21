@@ -16,8 +16,9 @@ namespace Bilibili.Live.Monitor {
 		private readonly TcpClient[] _clients;
 		private readonly bool[] _isConnecteds;
 		private readonly Thread _connectionKeeper;
-		private readonly List<Socket> _cachedCheckRead;
+		private readonly Thread _heartBeatSender;
 		private readonly Thread _danmuHandler;
+		private readonly List<Socket> _cachedCheckRead;
 		private bool _isDisposed;
 
 		/// <summary>
@@ -43,15 +44,19 @@ namespace Bilibili.Live.Monitor {
 			for (int i = 0; i < _clients.Length; i++)
 				_clients[i] = new TcpClient();
 			_isConnecteds = new bool[_roomIds.Length];
-			_connectionKeeper = new Thread(() => SafeCaller.Call(KeepConnection, false, -1, 0)) {
+			_connectionKeeper = new Thread(() => SafeCaller.Loop(KeepConnection)) {
 				IsBackground = true,
 				Name = "DanmuMonitor.ConnectionKeeper"
 			};
-			_cachedCheckRead = new List<Socket>(_clients.Length);
-			_danmuHandler = new Thread(() => SafeCaller.Call(HandleDanmu, false, -1, 0)) {
+			_heartBeatSender = new Thread(() => SafeCaller.Loop(SendHeartBeat)) {
+				IsBackground = true,
+				Name = "DanmuMonitor.HeartBeatSender"
+			};
+			_danmuHandler = new Thread(() => SafeCaller.Loop(HandleDanmu)) {
 				IsBackground = true,
 				Name = "DanmuMonitor.DanmuHandler"
 			};
+			_cachedCheckRead = new List<Socket>(_clients.Length);
 		}
 
 		/// <summary>
@@ -67,36 +72,62 @@ namespace Bilibili.Live.Monitor {
 
 		private void KeepConnection() {
 			List<TcpClient> unconnectedClients;
+			int[] unconnectedClientIndexMap;
 
 			unconnectedClients = new List<TcpClient>(_clients.Length);
+			unconnectedClientIndexMap = new int[_clients.Length];
 			while (true) {
 				int connectedCount;
 
 				for (int i = 0; i < _clients.Length; i++)
-					if (!_isConnecteds[i])
+					if (!_isConnecteds[i]) {
+						unconnectedClientIndexMap[unconnectedClients.Count] = i;
+						// 将TcpClient在unconnectedClients中的索引转换到_clients中的索引
 						unconnectedClients.Add(_clients[i]);
+					}
+				if (unconnectedClients.Count == 0)
+					// 所有客户端都连接到了服务器
+					goto sleep;
 				GlobalSettings.Logger.LogInfo($"检测到 {unconnectedClients.Count} 个客户端处于离线状态");
 				connectedCount = 0;
 				if (unconnectedClients.Count > 50)
 					// 如果未连接客户端过多就并行处理
 					Parallel.For(0, unconnectedClients.Count, i => {
-						if (SafeCaller.Call(() => DanmuApi.Connect(unconnectedClients[i]), true))
+						if (SafeCaller.Call(() => ConnectAndEnterRoom(unconnectedClients, i), true)) {
 							Interlocked.Increment(ref connectedCount);
+							_isConnecteds[unconnectedClientIndexMap[i]] = true;
+						}
 					});
 				else
-					foreach (TcpClient client in unconnectedClients)
-						if (SafeCaller.Call(() => DanmuApi.Connect(client), true))
+					for (int i = 0; i < unconnectedClients.Count; i++)
+						if (SafeCaller.Call(() => ConnectAndEnterRoom(unconnectedClients, i), true)) {
 							connectedCount++;
+							_isConnecteds[unconnectedClientIndexMap[i]] = true;
+						}
 				GlobalSettings.Logger.LogInfo($"{connectedCount} 个客户端成功连接到弹幕服务器");
 				unconnectedClients.Clear();
+			sleep:
 				Thread.Sleep(1000);
 				// 1秒检查一次 TODO: 延时时间加入配置文件
 			}
 		}
 
+		private void ConnectAndEnterRoom(List<TcpClient> unconnectedClients, int i) {
+			DanmuApi.Connect(unconnectedClients[i]);
+			DanmuApi.EnterRoom(unconnectedClients[i], _roomIds[i]);
+			DanmuApi.SendHeartBeat(unconnectedClients[i]);
+		}
+
+		private void SendHeartBeat() {
+			throw new NotImplementedException();
+		}
+
 		private void HandleDanmu() {
-			foreach (Danmu danmu in EnumerateDanmus()) {
-				// TODO
+			while (true) {
+				foreach (Danmu danmu in EnumerateDanmus()) {
+					// TODO
+					Console.WriteLine(danmu);
+				}
 			}
 		}
 
@@ -107,16 +138,19 @@ namespace Bilibili.Live.Monitor {
 					if (_isConnecteds[i])
 						// 只需要检查已连接的客户端
 						_cachedCheckRead.Add(_clients[i].Client);
+				if (_cachedCheckRead.Count == 0)
+					// 此时没有任何连接到服务器的客户端（比如刚刚调用Start方法的时候），checkRead为空会报错
+					goto sleep;
 				Socket.Select(_cachedCheckRead, null, null, 1000);
 				if (_cachedCheckRead.Count == 0)
-					Thread.Sleep(1000);
+					// 说明没有收到弹幕的客户端
+					goto sleep;
+				break;
+			sleep:
+				Thread.Sleep(1000);
 				// TODO: 延时时间加入配置文件
-				else
-					break;
 			}
-			return _cachedCheckRead.Select(socket => {
-				return new Danmu(); // NOT IMPL
-			});
+			return _cachedCheckRead.Select(socket => DanmuApi.ResolveDanmu(socket)).Where(danmu => danmu != Danmu.Empty);
 		}
 
 		/// <summary />

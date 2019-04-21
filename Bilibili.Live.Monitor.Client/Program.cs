@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using Bilibili.Api;
 using Bilibili.Settings;
 
 namespace Bilibili.Live.Monitor {
@@ -22,7 +21,7 @@ namespace Bilibili.Live.Monitor {
 				Console.ReadKey(true);
 				return;
 			}
-			DanmuMonitor danmuMonitor = new DanmuMonitor(LiveApi.GetRoomIdsDynamic(0, 1000).GetAwaiter().GetResult());
+			DanmuMonitor danmuMonitor = new DanmuMonitor(new uint[] { 4816623 }/*LiveApi.GetRoomIdsDynamic(0, 1000).GetAwaiter().GetResult()*/);
 			danmuMonitor.Start();
 			//TcpClient[] clients = DanmuApi.CreateClients(LiveApi.GetRoomIdsDynamic(0, 5).GetAwaiter().GetResult());
 			//client.Connect()

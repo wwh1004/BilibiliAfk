@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bilibili.Afk", "Bilibili.Af
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bilibili.Live.Monitor.Client", "Bilibili.Live.Monitor.Client\Bilibili.Live.Monitor.Client.csproj", "{8F1A4224-241C-480D-A761-38DFA6E9643A}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Bilibili.Logger", "Bilibili.Logger\Bilibili.Logger.shproj", "{995017A9-C650-46CA-B1C4-9086A40CA6D6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
