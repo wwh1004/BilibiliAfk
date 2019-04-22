@@ -107,14 +107,14 @@ namespace Bilibili.Api {
 			DanmuType action;
 
 			buffer = new byte[16];
-			await client.ReceiveAsync(buffer).WithCancellation(cancellationToken);
+			await client.ReceiveExactlyAsync(buffer).WithCancellation(cancellationToken);
 			// read header
 			if (cancellationToken.IsCancellationRequested)
 				return Danmu.Empty;
 			ResolveDanmuHeader(buffer, out length, out action);
 			buffer = new byte[length];
 			if (buffer.Length != 0)
-				await client.ReceiveAsync(buffer);
+				await client.ReceiveExactlyAsync(buffer);
 			// read payload
 			return ResolveDanmuPayload(action, buffer);
 		}

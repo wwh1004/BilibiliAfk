@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Bilibili.Api;
-using Bilibili.Settings;
 
 namespace Bilibili.Live.Monitor {
 	internal sealed class HeartBeatManager {

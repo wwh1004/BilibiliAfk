@@ -58,7 +58,7 @@ namespace Bilibili.Live.Monitor {
 		/// <summary>
 		/// 在接收到可能的抽奖弹幕时发生
 		/// </summary>
-		public EventHandler<DanmuHandlerEventArgs> DanmuHandler;
+		public event EventHandler<DanmuHandlerEventArgs> DanmuHandler;
 
 		/// <summary>
 		/// 构造器
@@ -97,10 +97,16 @@ namespace Bilibili.Live.Monitor {
 					danmu = await DanmuApi.ReadDanmuAsync(_client, cancellationToken);
 				}
 				catch (OperationCanceledException ex) {
-					if (ex.CancellationToken != _cancellationTokenSource.Token)
-						// 判断怎么退出的
+					if (ex.CancellationToken != _cancellationTokenSource.Token) {
 						GlobalSettings.Logger.LogError($"{_id} 号弹幕监控与服务器的连接意外断开");
+						Dispose();
+					}
 					return;
+				}
+				catch (Exception o) {
+					GlobalSettings.Logger.LogException(o);
+					// 不知道为什么不捕获异常
+					throw o;
 				}
 				switch (danmu.Type) {
 				case DanmuType.Command:

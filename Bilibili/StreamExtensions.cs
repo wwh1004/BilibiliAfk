@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Bilibili {
 	internal static class StreamExtensions {
-		public static Task ReadAsync(this Stream stream, byte[] buffer) {
+		public static Task<int> ReadAsync(this Stream stream, byte[] buffer) {
 			if (stream == null)
 				throw new ArgumentNullException(nameof(stream));
 			if (buffer == null)

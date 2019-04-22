@@ -1,10 +1,12 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Bilibili.Api;
 using Bilibili.Settings;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Bilibili.Live.Monitor {
 	internal static class Program {
@@ -25,7 +27,7 @@ namespace Bilibili.Live.Monitor {
 				Console.ReadKey(true);
 				return;
 			}
-			uint[] roomIds = LiveApi.GetRoomIdsDynamicAsync(0, 5).Result;
+			uint[] roomIds = LiveApi.GetRoomIdsDynamicAsync(0, 300).Result;
 			TaskFactory taskFactory = LimitedConcurrencyLevelUtils.TaskFactory;
 			taskFactory = Task.Factory;
 			for (int i = 0; i < roomIds.Length; i++) {
@@ -33,15 +35,24 @@ namespace Bilibili.Live.Monitor {
 				DanmuMonitor danmuMonitor = new DanmuMonitor(roomId /*4816623*/) {
 					Id = i
 				};
-				danmuMonitor.DanmuHandler += (sender, e) => {
-					//GlobalSettings.Logger.LogInfo(e.Danmu.Data.Length.ToString());
-				};
+				danmuMonitor.DanmuHandler += DanmuMonitor_DanmuHandler;
 				_ = taskFactory.StartNew(() => danmuMonitor.ExecuteAsync()).Unwrap();
 			}
-			//Thread.Sleep(5000);
-			//danmuMonitor.Dispose();
-			Console.WriteLine("ffffffffffffffffffffffffffffffff");
-			Console.ReadKey(true);
+			while (true)
+				Thread.Sleep(int.MaxValue);
+			//Console.ReadKey(true);
+		}
+
+		private static void DanmuMonitor_DanmuHandler(object sender, DanmuHandlerEventArgs e) {
+			JObject json;
+
+			json = e.Danmu.Json;
+			switch ((string)json["cmd"]) {
+			case "GUARD_MSG":
+			case "SPECIAL_GIFT":
+				GlobalSettings.Logger.LogInfo(json.ToString());
+				break;
+			}
 		}
 
 		public static string FormatJson(string json) {
