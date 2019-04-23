@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Bilibili.Api;
+using Bilibili.Settings;
 
 namespace Bilibili.Live.Monitor {
 	internal sealed class HeartBeatManager {
@@ -47,15 +48,17 @@ namespace Bilibili.Live.Monitor {
 				lock (_syncRoot) {
 					// 防止此时进行Add和Remove操作
 					if (_clients.Count > 50) {
-						Parallel.ForEach(_clients, LimitedConcurrencyLevelUtils.ParallelOptions, client => {
+						Parallel.ForEach(_clients, client => {
 							if (client.Connected && client.GetStream().CanWrite)
 								SafeCaller.Call(() => DanmuApi.SendHeartBeat(client), true);
+							Thread.Sleep(40);
 						});
 					}
 					else {
 						foreach (TcpClient client in _clients) {
 							if (client.Connected && client.GetStream().CanWrite)
 								SafeCaller.Call(() => DanmuApi.SendHeartBeat(client), true);
+							Thread.Sleep(40);
 						}
 					}
 				}
@@ -65,6 +68,8 @@ namespace Bilibili.Live.Monitor {
 				// 计算还需要等待的时间
 				if (span.Ticks > 0)
 					Thread.Sleep(span);
+				else
+					GlobalSettings.Logger.LogWarning($"心跳发送延时过度: {span.Milliseconds}ms");
 			}
 		}
 	}

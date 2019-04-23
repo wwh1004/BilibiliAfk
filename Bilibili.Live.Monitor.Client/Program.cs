@@ -27,17 +27,26 @@ namespace Bilibili.Live.Monitor {
 				Console.ReadKey(true);
 				return;
 			}
-			uint[] roomIds = LiveApi.GetRoomIdsDynamicAsync(0, 300).Result;
-			TaskFactory taskFactory = LimitedConcurrencyLevelUtils.TaskFactory;
-			taskFactory = Task.Factory;
-			for (int i = 0; i < roomIds.Length; i++) {
-				uint roomId = roomIds[i];
-				DanmuMonitor danmuMonitor = new DanmuMonitor(roomId /*4816623*/) {
+			uint[] roomIds = LiveApi.GetRoomIdsDynamicAsync(0, 3000).Result;
+			Parallel.For(0, roomIds.Length, i => {
+				DanmuMonitor danmuMonitor = new DanmuMonitor(roomIds[i] /*4816623*/) {
 					Id = i
 				};
 				danmuMonitor.DanmuHandler += DanmuMonitor_DanmuHandler;
-				_ = taskFactory.StartNew(() => danmuMonitor.ExecuteAsync()).Unwrap();
-			}
+				_ = danmuMonitor.ExecuteLoopAsync();
+				_ = danmuMonitor.ExecuteHeartBeatLoopAsync();
+				Thread.Sleep(100);
+			});
+			//for (int i = 0; i < roomIds.Length; i++) {
+			//	uint roomId = roomIds[i];
+			//	DanmuMonitor danmuMonitor = new DanmuMonitor(roomId /*4816623*/) {
+			//		Id = i
+			//	};
+			//	danmuMonitor.DanmuHandler += DanmuMonitor_DanmuHandler;
+			//	_ = danmuMonitor.ExecuteLoopAsync();
+			//	_ = danmuMonitor.ExecuteHeartBeatLoopAsync();
+			//	Thread.Sleep(100);
+			//}
 			while (true)
 				Thread.Sleep(int.MaxValue);
 			//Console.ReadKey(true);
