@@ -100,7 +100,8 @@ namespace Bilibili.Live.Monitor {
 					return;
 				try {
 					using (CancellationTokenSource timeoutCts = new CancellationTokenSource(_receiveTimeout))
-						danmu = await DanmuApi.ReadDanmuAsync(_client).WithCancellation(CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, _manualCts.Token).Token);
+					using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, _manualCts.Token))
+						danmu = await DanmuApi.ReadDanmuAsync(_client).WithCancellation(linkedCts.Token);
 				}
 				catch (OperationCanceledException) {
 					return;
@@ -124,7 +125,7 @@ namespace Bilibili.Live.Monitor {
 					}
 					break;
 				case DanmuType.Handshaking:
-						GlobalSettings.Logger.LogInfo($"{_id} 号弹幕监控进入房间 {_roomId}");
+					GlobalSettings.Logger.LogInfo($"{_id} 号弹幕监控进入房间 {_roomId}");
 					break;
 				}
 			}
