@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -18,7 +19,11 @@ namespace Bilibili.Api {
 
 		public static void SortAndSign(this FormUrlEncodedCollection parameters) {
 			parameters.Sort((x, y) => x.Key[0] - y.Key[0]);
-			parameters.Add("sign", ComputeSign(parameters.FormToString()));
+			parameters.Add("sign", ComputeSign(FormToString(parameters)));
+		}
+
+		private static string FormToString(IEnumerable<KeyValuePair<string, string>> values) {
+			return string.Join("&", values.Select(t => t.Key + "=" + Uri.EscapeDataString(t.Value)));
 		}
 
 		private static string ComputeSign(string text) {

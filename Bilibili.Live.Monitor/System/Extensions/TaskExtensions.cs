@@ -1,8 +1,7 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Bilibili {
+namespace System.Extensions {
 	internal static class TaskExtensions {
 		public static async Task WithCancellation(this Task task, CancellationToken cancellationToken) {
 			TaskCompletionSource<bool> taskCompletionSource;

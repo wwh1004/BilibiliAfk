@@ -1,8 +1,7 @@
-using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Bilibili {
+namespace System.Extensions {
 	internal static class StreamExtensions {
 		public static Task<int> ReadAsync(this Stream stream, byte[] buffer) {
 			if (stream == null)

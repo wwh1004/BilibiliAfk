@@ -1,4 +1,5 @@
 using System;
+using System.Extensions;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,9 +31,10 @@ namespace Bilibili.Live.Monitor {
 	/// </summary>
 	public sealed class DanmuMonitor : IDisposable {
 		private readonly uint _roomId;
+		private readonly int _id;
+		private readonly bool _showHeartBeat;
 		private readonly TcpClient _client;
-		private readonly CancellationTokenSource _cancellationTokenSource;
-		private int? _id;
+		private readonly CancellationTokenSource _manualCts;
 		private bool _isDisposed;
 
 		private static readonly TimeSpan _receiveTimeout = DanmuApi.HeartBeatInterval + new TimeSpan(0, 0, 10);
@@ -43,17 +45,19 @@ namespace Bilibili.Live.Monitor {
 		public uint RoomId => _roomId;
 
 		/// <summary>
+		/// 监控器ID
+		/// </summary>
+		public int Id => _id;
+
+		/// <summary>
+		/// 是否显示心跳，默认为否
+		/// </summary>
+		public bool ShowHeartBeat => _showHeartBeat;
+
+		/// <summary>
 		/// 弹幕客户端
 		/// </summary>
 		public TcpClient Client => _client;
-
-		/// <summary>
-		/// 监控器ID
-		/// </summary>
-		public int? Id {
-			get => _id;
-			set => _id = value;
-		}
 
 		/// <summary>
 		/// 在接收到可能的抽奖弹幕时发生
@@ -64,10 +68,14 @@ namespace Bilibili.Live.Monitor {
 		/// 构造器
 		/// </summary>
 		/// <param name="roomId">要监控的房间ID</param>
-		public DanmuMonitor(uint roomId) {
+		/// <param name="id"></param>
+		/// <param name="showHeartBeat"></param>
+		public DanmuMonitor(uint roomId, int id, bool showHeartBeat) {
 			_roomId = roomId;
+			_id = id;
+			_showHeartBeat = showHeartBeat;
 			_client = new TcpClient();
-			_cancellationTokenSource = new CancellationTokenSource();
+			_manualCts = new CancellationTokenSource();
 		}
 
 		/// <summary>
@@ -79,10 +87,7 @@ namespace Bilibili.Live.Monitor {
 
 			await DanmuApi.ConnectAsync(_client);
 			await DanmuApi.EnterRoomAsync(_client, _roomId);
-			//await DanmuApi.SendHeartBeatAsync(_client);
-			//// 先发送一次心跳，因为不确定HeartBeatManager什么时候会再次批量发送心跳
-			//HeartBeatManager.Instance.Add(_client);
-			//// 让HeartBeatManager接管心跳
+			_ = ExecuteHeartBeatLoopImplAsync();
 			await ExecuteLoopImplAsync();
 			Dispose();
 		}
@@ -91,67 +96,63 @@ namespace Bilibili.Live.Monitor {
 			while (true) {
 				Danmu danmu;
 
+				if (_isDisposed)
+					return;
 				try {
-					CancellationToken cancellationToken;
-
-					cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(_receiveTimeout).Token, _cancellationTokenSource.Token).Token;
-					if (_isDisposed)
-						return;
-					danmu = await DanmuApi.ReadDanmuAsync(_client, cancellationToken);
-					if (_isDisposed)
-						return;
+					using (CancellationTokenSource timeoutCts = new CancellationTokenSource(_receiveTimeout))
+						danmu = await DanmuApi.ReadDanmuAsync(_client).WithCancellation(CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, _manualCts.Token).Token);
 				}
-				catch (OperationCanceledException ex) {
-					if (ex.CancellationToken != _cancellationTokenSource.Token)
-						GlobalSettings.Logger.LogError($"{_id} 号弹幕监控与服务器的连接意外断开（超时）");
+				catch (OperationCanceledException) {
 					return;
 				}
-				catch (Exception o) {
-					GlobalSettings.Logger.LogException(o);
+				catch (Exception ex) {
+					if (!_isDisposed)
+						// 可能是资源释放不同步导致错误，不记录
+						GlobalSettings.Logger.LogException(ex);
 					return;
 				}
+				if (_isDisposed)
+					return;
 				switch (danmu.Type) {
 				case DanmuType.Command:
 					try {
 						DanmuHandler?.Invoke(this, new DanmuHandlerEventArgs(danmu));
 					}
 					catch (Exception ex) {
-						GlobalSettings.Logger.LogException(ex);
+						if (!_isDisposed)
+							GlobalSettings.Logger.LogException(ex);
 					}
 					break;
 				case DanmuType.Handshaking:
-					if (_id != null)
 						GlobalSettings.Logger.LogInfo($"{_id} 号弹幕监控进入房间 {_roomId}");
-					break;
-				default:
 					break;
 				}
 			}
 		}
 
-		/// <summary>
-		/// 执行心跳循环
-		/// </summary>
-		/// <returns></returns>
-		public async Task ExecuteHeartBeatLoopAsync() {
-			await ExecuteHeartBeatLoopImplAsync();
-			Dispose();
-		}
-
 		private async Task ExecuteHeartBeatLoopImplAsync() {
 			while (true) {
-				await Task.Delay(DanmuApi.HeartBeatInterval);
+				DateTime startTime;
+				TimeSpan span;
+
+				startTime = DateTime.Now;
 				if (_isDisposed)
 					return;
 				try {
 					await DanmuApi.SendHeartBeatAsync(_client);
+					if (_showHeartBeat)
+						GlobalSettings.Logger.LogInfo($"{_id} 号弹幕监控已发送心跳");
 				}
 				catch (Exception ex) {
-					GlobalSettings.Logger.LogException(ex);
+					if (!_isDisposed)
+						GlobalSettings.Logger.LogException(ex);
 					return;
 				}
 				if (_isDisposed)
 					return;
+				span = DanmuApi.HeartBeatInterval - (DateTime.Now - startTime);
+				if (span.Ticks > 0)
+					await Task.Delay(span);
 			}
 		}
 
@@ -159,8 +160,8 @@ namespace Bilibili.Live.Monitor {
 		public void Dispose() {
 			if (_isDisposed)
 				return;
-			_cancellationTokenSource.Cancel();
-			//HeartBeatManager.Instance.Remove(_client);
+			_manualCts.Cancel();
+			_manualCts.Dispose();
 			_client.Dispose();
 			_isDisposed = true;
 		}

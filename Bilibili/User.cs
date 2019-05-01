@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Net.Http;
 using Bilibili.Settings;
 using Newtonsoft.Json;
@@ -51,6 +52,7 @@ namespace Bilibili {
 		/// <summary>
 		/// 构造器（用于反序列化，虽然Json.NET可以使用有参构造器，但是如果程序被混淆，反序列化将失败）
 		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public User() {
 			_client = new HttpClient(new HttpClientHandler { UseCookies = false }) {
 				Timeout = TimeSpan.FromMilliseconds(3000)
@@ -81,9 +83,9 @@ namespace Bilibili {
 		/// </summary>
 		public void Initialize() {
 			_pcHeaders.Clear();
-			_pcHeaders.UpdateRange(GlobalSettings.Bilibili.PCHeaders);
+			UpdateDictionary(_pcHeaders, GlobalSettings.Bilibili.PCHeaders);
 			_appHeaders.Clear();
-			_appHeaders.UpdateRange(GlobalSettings.Bilibili.AppHeaders);
+			UpdateDictionary(_appHeaders, GlobalSettings.Bilibili.AppHeaders);
 		}
 
 		/// <summary>
@@ -92,8 +94,8 @@ namespace Bilibili {
 		public void ImportLoginData() {
 			if (!HasLoginData)
 				return;
-			_pcHeaders.UpdateRange(_loginData);
-			_appHeaders.UpdateRange(_loginData);
+			UpdateDictionary(_pcHeaders, _loginData);
+			UpdateDictionary(_appHeaders, _loginData);
 		}
 
 		/// <summary>
@@ -115,6 +117,11 @@ namespace Bilibili {
 				return;
 			_client.Dispose();
 			_isDisposed = true;
+		}
+
+		private static void UpdateDictionary(Dictionary<string, string> target, Dictionary<string, string> source) {
+			foreach (KeyValuePair<string, string> item in source)
+				target[item.Key] = item.Value;
 		}
 	}
 }

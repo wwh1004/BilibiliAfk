@@ -15,7 +15,6 @@ namespace Bilibili.Settings {
 		[JsonProperty("AppHeaders")]
 		private readonly Dictionary<string, string> _appHeaders;
 #pragma warning restore CS0649
-		private string _appParameters;
 
 		/// <summary />
 		public string AppSecret => _appSecret;
@@ -29,9 +28,6 @@ namespace Bilibili.Settings {
 		/// <summary />
 		public Dictionary<string, string> AppHeaders => _appHeaders;
 
-		/// <summary />
-		public string AppParameters => _appParameters;
-
 		/// <summary>
 		/// 加载配置
 		/// </summary>
@@ -41,7 +37,6 @@ namespace Bilibili.Settings {
 			BilibiliSettings settings;
 
 			settings = JsonConvert.DeserializeObject<BilibiliSettings>(json);
-			settings._appParameters = settings._general.FormToString();
 			return settings;
 		}
 

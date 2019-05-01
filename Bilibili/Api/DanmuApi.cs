@@ -1,9 +1,9 @@
 using System;
+using System.Extensions;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bilibili.Api {
@@ -63,23 +63,6 @@ namespace Bilibili.Api {
 		/// </summary>
 		/// <param name="client"></param>
 		/// <returns></returns>
-		public static void SendHeartBeat(TcpClient client) {
-			if (client == null)
-				throw new ArgumentNullException(nameof(client));
-
-			try {
-				client.Client.Send(_heartBeatPacket);
-			}
-			catch (Exception ex) {
-				throw new ApiException(ex);
-			}
-		}
-
-		/// <summary>
-		/// 发送心跳
-		/// </summary>
-		/// <param name="client"></param>
-		/// <returns></returns>
 		public static async Task SendHeartBeatAsync(TcpClient client) {
 			if (client == null)
 				throw new ArgumentNullException(nameof(client));
@@ -96,9 +79,8 @@ namespace Bilibili.Api {
 		/// 读取弹幕
 		/// </summary>
 		/// <param name="client"></param>
-		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public static async Task<Danmu> ReadDanmuAsync(TcpClient client, CancellationToken cancellationToken) {
+		public static async Task<Danmu> ReadDanmuAsync(TcpClient client) {
 			if (client == null)
 				throw new ArgumentNullException(nameof(client));
 
@@ -107,10 +89,8 @@ namespace Bilibili.Api {
 			DanmuType action;
 
 			buffer = new byte[16];
-			await client.ReceiveExactlyAsync(buffer).WithCancellation(cancellationToken);
+			await client.ReceiveExactlyAsync(buffer);
 			// read header
-			if (cancellationToken.IsCancellationRequested)
-				return Danmu.Empty;
 			ResolveDanmuHeader(buffer, out length, out action);
 			buffer = new byte[length];
 			if (buffer.Length != 0)

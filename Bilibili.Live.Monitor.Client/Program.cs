@@ -16,7 +16,6 @@ namespace Bilibili.Live.Monitor {
 			if (!BitConverter.IsLittleEndian) {
 				GlobalSettings.Logger.LogWarning("在BigEndian模式的CPU下工作可能导致程序出错");
 				GlobalSettings.Logger.LogWarning("如果出现错误，请创建issue");
-				//throw new PlatformNotSupportedException();
 			}
 			try {
 				GlobalSettings.LoadAll();
@@ -27,29 +26,41 @@ namespace Bilibili.Live.Monitor {
 				Console.ReadKey(true);
 				return;
 			}
-			uint[] roomIds = LiveApi.GetRoomIdsDynamicAsync(0, 3000).Result;
-			Parallel.For(0, roomIds.Length, i => {
-				DanmuMonitor danmuMonitor = new DanmuMonitor(roomIds[i] /*4816623*/) {
-					Id = i
-				};
-				danmuMonitor.DanmuHandler += DanmuMonitor_DanmuHandler;
-				_ = danmuMonitor.ExecuteLoopAsync();
-				_ = danmuMonitor.ExecuteHeartBeatLoopAsync();
-				Thread.Sleep(100);
-			});
-			//for (int i = 0; i < roomIds.Length; i++) {
-			//	uint roomId = roomIds[i];
-			//	DanmuMonitor danmuMonitor = new DanmuMonitor(roomId /*4816623*/) {
-			//		Id = i
-			//	};
-			//	danmuMonitor.DanmuHandler += DanmuMonitor_DanmuHandler;
-			//	_ = danmuMonitor.ExecuteLoopAsync();
-			//	_ = danmuMonitor.ExecuteHeartBeatLoopAsync();
-			//	Thread.Sleep(100);
-			//}
+			_ = StartAsync(0, 1000);
 			while (true)
 				Thread.Sleep(int.MaxValue);
-			//Console.ReadKey(true);
+		}
+
+		private static async Task StartAsync(uint start, uint end) {
+			uint[] roomIds;
+			int count;
+			TimeSpan interval;
+
+			roomIds = LiveApi.GetRoomIdsDynamicAsync(start, end).Result;
+			count = (int)(end - start);
+			interval = TimeSpan.FromMilliseconds(DanmuApi.HeartBeatInterval.TotalMilliseconds / count);
+			for (int i = 0; i < count; i++) {
+				DateTime startTime;
+				WrappedDanmuMonitor wrappedDanmuMonitor;
+				TimeSpan span;
+
+				startTime = DateTime.Now;
+				wrappedDanmuMonitor = new WrappedDanmuMonitor(() => {
+					DanmuMonitor danmuMonitor;
+
+					danmuMonitor = new DanmuMonitor(roomIds[i], (int)start + i, i == 0);
+					danmuMonitor.DanmuHandler += DanmuMonitor_DanmuHandler;
+					return danmuMonitor;
+				});
+				wrappedDanmuMonitor.Execute();
+				span = interval - (DateTime.Now - startTime);
+				if (span.Ticks > 0)
+					await Task.Delay(span);
+				// "await Task.Delay(span)"的精确度最低，据说是以15ms为单位
+				// "Thread.Sleep(span)"精度稍高，但还是不如"new ManualResetEvent(false).WaitOne(span)"
+				// 但是不清楚为什么，使用"new ManualResetEvent(false).WaitOne(span)"的效果和"await Task.Delay(span)"差不多
+				// 所以还是使用资源占用最小的"await Task.Delay(span)"
+			}
 		}
 
 		private static void DanmuMonitor_DanmuHandler(object sender, DanmuHandlerEventArgs e) {
@@ -59,7 +70,7 @@ namespace Bilibili.Live.Monitor {
 			switch ((string)json["cmd"]) {
 			case "GUARD_MSG":
 			case "SPECIAL_GIFT":
-				GlobalSettings.Logger.LogInfo(json.ToString());
+				GlobalSettings.Logger.LogInfo(FormatJson(json.ToString()));
 				break;
 			}
 		}

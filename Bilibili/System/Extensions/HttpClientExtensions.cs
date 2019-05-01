@@ -1,11 +1,11 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bilibili {
+namespace System.Extensions {
 	internal static class HttpClientExtensions {
 		public static Task<HttpResponseMessage> SendAsync(this HttpClient client, HttpMethod method, string url) {
 			return client.SendAsync(method, url, null, null);
@@ -38,7 +38,7 @@ namespace Bilibili {
 			if (parameters != null && method == HttpMethod.Get) {
 				string query;
 
-				query = parameters.FormToString();
+				query = FormToString(parameters);
 				if (!string.IsNullOrEmpty(query))
 					if (string.IsNullOrEmpty(uriBuilder.Query))
 						uriBuilder.Query = query;
@@ -53,9 +53,22 @@ namespace Bilibili {
 			if (request.Content != null)
 				request.Content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
 			if (headers != null)
-				request.Headers.UpdateRange(headers);
+				UpdateHeaders(request.Headers, headers);
 			return client.SendAsync(request);
 		}
 
+		private static string FormToString(IEnumerable<KeyValuePair<string, string>> values) {
+			return string.Join("&", values.Select(t => t.Key + "=" + Uri.EscapeDataString(t.Value)));
+		}
+
+		private static void UpdateHeaders(HttpRequestHeaders requestHeaders, IEnumerable<KeyValuePair<string, string>> headers) {
+			if (requestHeaders == null)
+				throw new ArgumentNullException(nameof(requestHeaders));
+			if (headers == null)
+				throw new ArgumentNullException(nameof(headers));
+
+			foreach (KeyValuePair<string, string> item in headers)
+				requestHeaders.TryAddWithoutValidation(item.Key, item.Value);
+		}
 	}
 }

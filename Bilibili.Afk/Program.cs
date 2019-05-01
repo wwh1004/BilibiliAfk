@@ -15,7 +15,6 @@ namespace Bilibili.Afk {
 			if (!BitConverter.IsLittleEndian) {
 				GlobalSettings.Logger.LogWarning("在BigEndian模式的CPU下工作可能导致程序出错");
 				GlobalSettings.Logger.LogWarning("如果出现错误，请创建issue");
-				//throw new PlatformNotSupportedException();
 			}
 			usersFilePath = Path.Combine(Environment.CurrentDirectory, "Settings", GetAssemblyAttribute<AssemblyProductAttribute>().Product + ".Users.json");
 			try {

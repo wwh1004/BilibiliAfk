@@ -1,8 +1,7 @@
-using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace Bilibili {
+namespace System.Extensions {
 	internal static class TcpClientExtensions {
 		public static async Task ReceiveExactlyAsync(this TcpClient client, byte[] buffer) {
 			await client.ReceiveExactlyAsync(buffer, 0, buffer.Length);
