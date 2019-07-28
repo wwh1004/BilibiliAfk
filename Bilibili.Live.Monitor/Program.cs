@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Bilibili.Api;
 using Bilibili.Settings;
@@ -10,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Bilibili.Live.Monitor {
 	internal static class Program {
-		private static void Main(string[] args) {
+		private static async Task Main() {
 			Console.Title = GetTitle();
 			GlobalSettings.Logger = Logger.Instance;
 			if (!BitConverter.IsLittleEndian) {
@@ -26,9 +25,7 @@ namespace Bilibili.Live.Monitor {
 				Console.ReadKey(true);
 				return;
 			}
-			_ = StartAsync(0, 1000);
-			while (true)
-				Thread.Sleep(int.MaxValue);
+			await StartAsync(0, 300);
 		}
 
 		private static async Task StartAsync(uint start, uint end) {
@@ -36,30 +33,21 @@ namespace Bilibili.Live.Monitor {
 			int count;
 			TimeSpan interval;
 
-			roomIds = LiveApi.GetRoomIdsDynamicAsync(start, end).Result;
+			roomIds = await LiveApi.GetRoomIdsDynamicAsync(start, end);
 			count = (int)(end - start);
 			interval = TimeSpan.FromMilliseconds(DanmuApi.HeartBeatInterval.TotalMilliseconds / count);
-			for (int i = 0; i < count; i++) {
+			for (uint i = start; i < end; i++) {
 				DateTime startTime;
-				WrappedDanmuMonitor wrappedDanmuMonitor;
+				DanmuMonitor danmuMonitor;
 				TimeSpan span;
 
 				startTime = DateTime.Now;
-				wrappedDanmuMonitor = new WrappedDanmuMonitor(() => {
-					DanmuMonitor danmuMonitor;
-
-					danmuMonitor = new DanmuMonitor(roomIds[i], (int)start + i, i == 0);
-					danmuMonitor.DanmuHandler += DanmuMonitor_DanmuHandler;
-					return danmuMonitor;
-				});
-				wrappedDanmuMonitor.Execute();
+				danmuMonitor = new DanmuMonitor(roomIds[i], (int)i, i == start);
+				danmuMonitor.DanmuHandler += DanmuMonitor_DanmuHandler;
+				danmuMonitor.Execute();
 				span = interval - (DateTime.Now - startTime);
 				if (span.Ticks > 0)
 					await Task.Delay(span);
-				// "await Task.Delay(span)"的精确度最低，据说是以15ms为单位
-				// "Thread.Sleep(span)"精度稍高，但还是不如"new ManualResetEvent(false).WaitOne(span)"
-				// 但是不清楚为什么，使用"new ManualResetEvent(false).WaitOne(span)"的效果和"await Task.Delay(span)"差不多
-				// 所以还是使用资源占用最小的"await Task.Delay(span)"
 			}
 		}
 

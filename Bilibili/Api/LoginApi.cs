@@ -59,13 +59,13 @@ namespace Bilibili.Api {
 			if (user == null)
 				throw new ArgumentNullException(nameof(user));
 
-			FormUrlEncodedCollection parameters;
+			QueryCollection queries;
 
-			parameters = new FormUrlEncodedCollection {
+			queries = new QueryCollection {
 				{ "appkey", General["appkey"] }
 			};
-			parameters.SortAndSign();
-			using (HttpResponseMessage response = await user.Client.SendAsync(HttpMethod.Post, OAUTH2_GETKEY_URL, parameters, null))
+			queries.SortAndSign();
+			using (HttpResponseMessage response = await user.Client.SendAsync(HttpMethod.Post, OAUTH2_GETKEY_URL, queries, null))
 				return await response.Content.ReadAsStringAsync();
 		}
 
@@ -78,21 +78,21 @@ namespace Bilibili.Api {
 			if (user == null)
 				throw new ArgumentNullException(nameof(user));
 
-			FormUrlEncodedCollection parameters;
+			QueryCollection queries;
 
-			parameters = new FormUrlEncodedCollection {
+			queries = new QueryCollection {
 				{ "access_key", user.LoginData["access_key"] },
 				{ "ts", ApiUtils.GetTimeStamp().ToString() }
 			};
-			parameters.AddRange(user.LoginData["cookie"].Split(';').Select(item => {
+			queries.AddRange(user.LoginData["cookie"].Split(';').Select(item => {
 				string[] pair;
 
 				pair = item.Split('=');
 				return new KeyValuePair<string, string>(pair[0], pair[1]);
 			}));
-			parameters.AddRange(General);
-			parameters.SortAndSign();
-			using (HttpResponseMessage response = await user.Client.SendAsync(HttpMethod.Get, OAUTH2_INFO_URL, parameters, user.AppHeaders))
+			queries.AddRange(General);
+			queries.SortAndSign();
+			using (HttpResponseMessage response = await user.Client.SendAsync(HttpMethod.Get, OAUTH2_INFO_URL, queries, user.AppHeaders))
 				return await response.Content.ReadAsStringAsync();
 		}
 
@@ -112,20 +112,19 @@ namespace Bilibili.Api {
 			JToken loginKey;
 			string rsaKey;
 			RSAParameters rsaParameters;
-			FormUrlEncodedCollection parameters;
+			QueryCollection queries;
 
 			loginKey = JObject.Parse(jsonKey)["data"];
-			rsaKey = loginKey["key"].ToString();
-			rsaKey = rsaKey.Replace("\n", string.Empty).Substring(26, rsaKey.Length - 56);
+			rsaKey = (string)loginKey["key"];
 			rsaParameters = ApiUtils.ParsePublicKey(rsaKey);
-			parameters = new FormUrlEncodedCollection {
+			queries = new QueryCollection {
 				{ "username", user.Account },
 				{ "password", ApiUtils.RsaEncrypt(loginKey["hash"] + user.Password, rsaParameters) },
 				{ "captcha", captcha ?? string.Empty }
 			};
-			parameters.AddRange(General);
-			parameters.SortAndSign();
-			using (HttpResponseMessage response = await user.Client.SendAsync(HttpMethod.Post, OAUTH2_LOGIN_URL, parameters, null))
+			queries.AddRange(General);
+			queries.SortAndSign();
+			using (HttpResponseMessage response = await user.Client.SendAsync(HttpMethod.Post, OAUTH2_LOGIN_URL, queries, null))
 				return await response.Content.ReadAsStringAsync();
 		}
 
@@ -138,22 +137,22 @@ namespace Bilibili.Api {
 			if (user == null)
 				throw new ArgumentNullException(nameof(user));
 
-			FormUrlEncodedCollection parameters;
+			QueryCollection queries;
 
-			parameters = new FormUrlEncodedCollection {
+			queries = new QueryCollection {
 				{ "access_key", user.LoginData["access_key"] },
 				{ "refresh_token", user.LoginData["refresh_token"] },
 				{ "ts", ApiUtils.GetTimeStamp().ToString() }
 			};
-			parameters.AddRange(user.LoginData["cookie"].Split(';').Select(item => {
+			queries.AddRange(user.LoginData["cookie"].Split(';').Select(item => {
 				string[] pair;
 
 				pair = item.Split('=');
 				return new KeyValuePair<string, string>(pair[0], pair[1]);
 			}));
-			parameters.AddRange(General);
-			parameters.SortAndSign();
-			using (HttpResponseMessage response = await user.Client.SendAsync(HttpMethod.Post, OAUTH2_REFRESH_TOKEN_URL, parameters, user.AppHeaders))
+			queries.AddRange(General);
+			queries.SortAndSign();
+			using (HttpResponseMessage response = await user.Client.SendAsync(HttpMethod.Post, OAUTH2_REFRESH_TOKEN_URL, queries, user.AppHeaders))
 				return await response.Content.ReadAsStringAsync();
 		}
 

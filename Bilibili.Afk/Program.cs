@@ -1,12 +1,13 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using Bilibili.Api;
 using Bilibili.Settings;
 
 namespace Bilibili.Afk {
 	internal static class Program {
-		private static void Main(string[] args) {
+		private static async Task Main() {
 			string usersFilePath;
 			Users users;
 
@@ -29,7 +30,7 @@ namespace Bilibili.Afk {
 			}
 			LoginApiExtensions.LoginDataUpdated += (sender, e) => File.WriteAllText(usersFilePath, users.ToJson());
 			User user = users[0];
-			var result = user.Login().GetAwaiter().GetResult();
+			await user.Login();
 			Console.ReadKey(true);
 		}
 

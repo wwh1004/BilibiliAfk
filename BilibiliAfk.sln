@@ -9,10 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bilibili.Live.Monitor", "Bi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bilibili.Afk", "Bilibili.Afk\Bilibili.Afk.csproj", "{4FC8718A-A473-40DA-9D23-922351F72033}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bilibili.Live.Monitor.Client", "Bilibili.Live.Monitor.Client\Bilibili.Live.Monitor.Client.csproj", "{8F1A4224-241C-480D-A761-38DFA6E9643A}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Bilibili.Logger", "Bilibili.Logger\Bilibili.Logger.shproj", "{995017A9-C650-46CA-B1C4-9086A40CA6D6}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,10 +27,6 @@ Global
 		{4FC8718A-A473-40DA-9D23-922351F72033}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FC8718A-A473-40DA-9D23-922351F72033}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FC8718A-A473-40DA-9D23-922351F72033}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8F1A4224-241C-480D-A761-38DFA6E9643A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8F1A4224-241C-480D-A761-38DFA6E9643A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8F1A4224-241C-480D-A761-38DFA6E9643A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8F1A4224-241C-480D-A761-38DFA6E9643A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

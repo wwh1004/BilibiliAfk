@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Extensions;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -8,7 +8,7 @@ using Bilibili.Settings;
 
 namespace Bilibili.Api {
 	internal static class ApiUtils {
-		private static readonly MD5CryptoServiceProvider _md5Service = new MD5CryptoServiceProvider();
+		private static readonly MD5 _md5 = MD5.Create();
 
 		public static ulong GetTimeStamp() {
 			TimeSpan timeSpan;
@@ -17,20 +17,16 @@ namespace Bilibili.Api {
 			return (ulong)timeSpan.TotalSeconds;
 		}
 
-		public static void SortAndSign(this FormUrlEncodedCollection parameters) {
-			parameters.Sort((x, y) => x.Key[0] - y.Key[0]);
-			parameters.Add("sign", ComputeSign(FormToString(parameters)));
-		}
-
-		private static string FormToString(IEnumerable<KeyValuePair<string, string>> values) {
-			return string.Join("&", values.Select(t => t.Key + "=" + Uri.EscapeDataString(t.Value)));
+		public static void SortAndSign(this QueryCollection queries) {
+			queries.Sort((x, y) => x.Key[0] - y.Key[0]);
+			queries.Add("sign", ComputeSign(queries.ToQueryString()));
 		}
 
 		private static string ComputeSign(string text) {
 			byte[] hash;
 			StringBuilder sb;
 
-			hash = _md5Service.ComputeHash(Encoding.UTF8.GetBytes(text + GlobalSettings.Bilibili.AppSecret));
+			hash = _md5.ComputeHash(Encoding.UTF8.GetBytes(text + GlobalSettings.Bilibili.AppSecret));
 			sb = new StringBuilder();
 			for (int i = 0; i < hash.Length; i++)
 				sb.Append(hash[i].ToString("x2"));
@@ -38,9 +34,9 @@ namespace Bilibili.Api {
 		}
 
 		public static string RsaEncrypt(string text, RSAParameters rsaParameters) {
-			using (RSACryptoServiceProvider rsaService = new RSACryptoServiceProvider()) {
-				rsaService.ImportParameters(rsaParameters);
-				return Convert.ToBase64String(rsaService.Encrypt(Encoding.UTF8.GetBytes(text), false));
+			using (RSA rsa = RSA.Create()) {
+				rsa.ImportParameters(rsaParameters);
+				return Convert.ToBase64String(rsa.Encrypt(Encoding.UTF8.GetBytes(text), RSAEncryptionPadding.Pkcs1));
 			}
 		}
 
@@ -48,6 +44,8 @@ namespace Bilibili.Api {
 			if (string.IsNullOrEmpty(publicKey))
 				throw new ArgumentNullException(nameof(publicKey));
 
+			publicKey = publicKey.Replace("\n", string.Empty);
+			publicKey = publicKey.Substring(26, publicKey.Length - 50);
 			using (MemoryStream stream = new MemoryStream(Convert.FromBase64String(publicKey))) {
 				using (BinaryReader reader = new BinaryReader(stream)) {
 					ushort i16;

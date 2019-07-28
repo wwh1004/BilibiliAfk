@@ -20,5 +20,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Bilibili\Bilibili.csproj" />
   </ItemGroup>
-  <Import Project="..\Bilibili.Logger\Bilibili.Logger.projitems" Label="Shared" />
 </Project>
